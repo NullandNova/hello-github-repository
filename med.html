@@ -1,0 +1,863 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Med Waste Tracker</title>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f1f5f4;
+    color: #243b35;
+}
+
+header {
+    background: #123c35;
+    color: white;
+    padding: 22px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+header h1 {
+    font-size: 25px;
+}
+
+header p {
+    font-size: 13px;
+    margin-top: 5px;
+    color: #c6e4d9;
+}
+
+header span {
+    background: #d5f5e7;
+    color: #145b43;
+    padding: 9px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+nav {
+    background: white;
+    padding: 15px 5%;
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 5px #ddd;
+}
+
+nav a {
+    text-decoration: none;
+    color: #42665b;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #16845d;
+}
+
+.container {
+    padding: 30px 5%;
+    max-width: 1400px;
+    margin: auto;
+}
+
+.heading {
+    margin-bottom: 20px;
+}
+
+.heading h2 {
+    font-size: 25px;
+}
+
+.heading p {
+    color: #758780;
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #00000008;
+    border-left: 4px solid #248c68;
+}
+
+.stat-card p {
+    color: #788b83;
+    font-size: 13px;
+}
+
+.stat-card h2 {
+    margin-top: 12px;
+    font-size: 28px;
+    color: #174d3d;
+}
+
+.panel {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px #00000008;
+}
+
+.panel h3 {
+    margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dce5e0;
+    border-radius: 7px;
+    outline: none;
+    background: white;
+}
+
+input:focus, select:focus {
+    border-color: #248c68;
+}
+
+button {
+    border: none;
+    padding: 12px 19px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #167653;
+    color: white;
+}
+
+button:hover {
+    background: #105b40;
+}
+
+.form-button {
+    margin-top: 20px;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.chart-box {
+    height: 280px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 750px;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #edf0ee;
+    font-size: 13px;
+}
+
+th {
+    background: #edf6f1;
+    color: #285b48;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.status {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: #e1f5e9;
+    color: #18744d;
+    white-space: nowrap;
+}
+
+.status.pending {
+    background: #fff1d6;
+    color: #95620b;
+}
+
+.status.disposed {
+    background: #dceefa;
+    color: #24628d;
+}
+
+.action-btn {
+    padding: 8px 11px;
+    font-size: 11px;
+    margin: 3px;
+}
+
+.delete-btn {
+    background: #c94a4a;
+}
+
+#qrResult {
+    text-align: center;
+    padding: 20px;
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+}
+
+#qrcode img {
+    margin: auto;
+}
+
+.history-item {
+    border-left: 3px solid #248c68;
+    padding: 10px 15px;
+    margin: 12px 0;
+    background: #f6faf7;
+    border-radius: 5px;
+    font-size: 13px;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #80928a;
+    font-size: 12px;
+}
+
+@media(max-width:600px) {
+    header {
+        padding: 20px;
+    }
+
+    .container {
+        padding: 20px 15px;
+    }
+
+    nav {
+        gap: 15px;
+        padding: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>♻ Med Waste Tracker</h1>
+        <p>Smart Medical Waste Management System</p>
+    </div>
+    <span>● System Active</span>
+</header>
+
+<nav>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#add">Add Waste</a>
+    <a href="#records">Tracking</a>
+    <a href="#analytics">Analytics</a>
+    <a href="#history">History</a>
+</nav>
+
+<div class="container">
+
+<!-- DASHBOARD -->
+
+<section id="dashboard">
+    <div class="heading">
+        <h2>Dashboard Overview</h2>
+        <p>Monitor and manage medical waste movement.</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <p>Total Waste Batches</p>
+            <h2 id="totalBatches">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Total Waste (kg)</p>
+            <h2 id="totalWaste">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Active Batches</p>
+            <h2 id="activeBatches">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Disposed Batches</p>
+            <h2 id="disposedBatches">0</h2>
+        </div>
+    </div>
+</section>
+
+<!-- ADD WASTE -->
+
+<section id="add" class="panel">
+    <h3>＋ Register New Waste Batch</h3>
+
+    <form id="wasteForm">
+        <div class="form-grid">
+
+            <div>
+                <label>Waste Batch Name</label>
+                <input id="batchName" required placeholder="e.g. Hospital Waste">
+            </div>
+
+            <div>
+                <label>Waste Category</label>
+                <select id="category" required>
+                    <option value="">Select Category</option>
+                    <option>Yellow</option>
+                    <option>Red</option>
+                    <option>White</option>
+                    <option>Blue</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Waste Quantity (kg)</label>
+                <input id="quantity" type="number" min="0.01" step="0.01" required>
+            </div>
+
+            <div>
+                <label>Department</label>
+                <input id="department" required placeholder="e.g. Emergency">
+            </div>
+
+            <div>
+                <label>Handler Name</label>
+                <input id="handler" required placeholder="Person responsible">
+            </div>
+
+            <div>
+                <label>Current Stage</label>
+                <select id="stage">
+                    <option>Collection</option>
+                    <option>Segregation</option>
+                    <option>Storage</option>
+                    <option>Transportation</option>
+                    <option>Processing</option>
+                    <option>Final Disposal</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button class="form-button" type="submit">
+            Register Waste Batch
+        </button>
+    </form>
+</section>
+
+<!-- TRACKING -->
+
+<section id="records" class="panel">
+    <h3>Waste Tracking Records</h3>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Batch ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Handler</th>
+                    <th>Stage</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="recordsBody"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- QR CODE -->
+
+<section class="panel">
+    <h3>QR Code Generator</h3>
+    <p style="color:#788b83;font-size:13px">
+        Select a registered batch to generate its unique QR code.
+    </p>
+
+    <div class="form-grid" style="margin-top:18px">
+        <div>
+            <label>Select Batch</label>
+            <select id="qrSelect">
+                <option value="">Choose a batch</option>
+            </select>
+        </div>
+        <div style="display:flex;align-items:end">
+            <button onclick="generateQR()">Generate QR Code</button>
+        </div>
+    </div>
+
+    <div id="qrResult">
+        <div id="qrcode"></div>
+        <p id="qrText"></p>
+        <button id="downloadQR" style="display:none" onclick="downloadQR()">
+            Download QR Code
+        </button>
+    </div>
+</section>
+
+<!-- ANALYTICS -->
+
+<section id="analytics" class="panel">
+    <h3>Waste Analytics</h3>
+
+    <div class="charts">
+        <div class="chart-box">
+            <canvas id="categoryChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <canvas id="quantityChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- HISTORY -->
+
+<section id="history" class="panel">
+    <h3>Handoff & Activity History</h3>
+    <div id="historyList">
+        <p>No activity recorded yet.</p>
+    </div>
+</section>
+
+</div>
+
+<footer>
+    Med Waste Tracker © 2026 | Smart Healthcare Waste Management
+</footer>
+
+<script>
+
+// DATABASE
+
+let batches = JSON.parse(
+    localStorage.getItem("medWasteBatches") || "[]"
+);
+
+let history = JSON.parse(
+    localStorage.getItem("medWasteHistory") || "[]"
+);
+
+let categoryChart = null;
+let quantityChart = null;
+
+function saveData() {
+    localStorage.setItem("medWasteBatches", JSON.stringify(batches));
+    localStorage.setItem("medWasteHistory", JSON.stringify(history));
+}
+
+function logActivity(id, message, handler) {
+    history.unshift({
+        id: id,
+        message: message,
+        handler: handler,
+        time: new Date().toLocaleString()
+    });
+
+    saveData();
+    renderHistory();
+}
+
+// REGISTER BATCH
+
+document.getElementById("wasteForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const batch = {
+        id: "MW-" + Date.now(),
+        name: document.getElementById("batchName").value,
+        category: document.getElementById("category").value,
+        quantity: Number(document.getElementById("quantity").value),
+        department: document.getElementById("department").value,
+        handler: document.getElementById("handler").value,
+        stage: document.getElementById("stage").value,
+        created: new Date().toLocaleString()
+    };
+
+    batches.push(batch);
+
+    logActivity(batch.id, "New batch registered", batch.handler);
+
+    saveData();
+    renderAll();
+
+    this.reset();
+
+    alert("Waste batch registered successfully!");
+});
+
+// UPDATE HANDOFF
+
+function updateBatch(id) {
+    const batch = batches.find(b => b.id === id);
+
+    if (!batch) return;
+
+    const newHandler = prompt("Enter the new handler's name:");
+    if (!newHandler || !newHandler.trim()) return;
+
+    const stages = [
+        "Collection",
+        "Segregation",
+        "Storage",
+        "Transportation",
+        "Processing",
+        "Final Disposal"
+    ];
+
+    const newStage = prompt(
+        "Enter new stage:\n" + stages.join(", "),
+        batch.stage
+    );
+
+    if (!newStage) return;
+
+    const selectedStage = stages.find(
+        s => s.toLowerCase() === newStage.trim().toLowerCase()
+    );
+
+    if (!selectedStage) {
+        alert("Invalid stage. Please try again.");
+        return;
+    }
+
+    const oldHandler = batch.handler;
+
+    batch.handler = newHandler.trim();
+    batch.stage = selectedStage;
+
+    logActivity(
+        id,
+        oldHandler + " handed over to " + batch.handler +
+        " | Stage: " + batch.stage,
+        batch.handler
+    );
+
+    saveData();
+    renderAll();
+
+    alert("Handoff updated successfully!");
+}
+
+// DELETE BATCH
+
+function deleteBatch(id) {
+    if (!confirm("Delete this waste batch?")) return;
+
+    batches = batches.filter(b => b.id !== id);
+
+    logActivity(id, "Batch record deleted", "Administrator");
+
+    saveData();
+    renderAll();
+}
+
+// RENDER TABLE
+
+function renderRecords() {
+    const body = document.getElementById("recordsBody");
+
+    body.innerHTML = "";
+
+    batches.forEach(b => {
+        let statusClass =
+            b.stage === "Final Disposal" ? "disposed" :
+            b.stage === "Collection" ? "pending" : "";
+
+        body.innerHTML += `
+        <tr>
+            <td>${escapeHTML(b.id)}</td>
+            <td>${escapeHTML(b.name)}</td>
+            <td>${escapeHTML(b.category)}</td>
+            <td>${b.quantity} kg</td>
+            <td>${escapeHTML(b.handler)}</td>
+            <td>
+                <span class="status ${statusClass}">
+                    ${escapeHTML(b.stage)}
+                </span>
+            </td>
+            <td>
+                <button class="action-btn"
+                    onclick="updateBatch('${b.id}')">
+                    Handoff
+                </button>
+
+                <button class="action-btn delete-btn"
+                    onclick="deleteBatch('${b.id}')">
+                    Delete
+                </button>
+            </td>
+        </tr>`;
+    });
+
+    if (batches.length === 0) {
+        body.innerHTML =
+            '<tr><td colspan="7">No waste records available.</td></tr>';
+    }
+}
+
+// SAFE TEXT DISPLAY
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, function(c) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[c];
+    });
+}
+
+// DASHBOARD
+
+function renderDashboard() {
+    document.getElementById("totalBatches").textContent =
+        batches.length;
+
+    document.getElementById("totalWaste").textContent =
+        batches.reduce((sum, b) => sum + b.quantity, 0).toFixed(2);
+
+    document.getElementById("activeBatches").textContent =
+        batches.filter(b => b.stage !== "Final Disposal").length;
+
+    document.getElementById("disposedBatches").textContent =
+        batches.filter(b => b.stage === "Final Disposal").length;
+}
+
+// QR CODE
+
+function renderQRSelect() {
+    const select = document.getElementById("qrSelect");
+
+    const oldValue = select.value;
+
+    select.innerHTML = '<option value="">Choose a batch</option>';
+
+    batches.forEach(b => {
+        const option = document.createElement("option");
+        option.value = b.id;
+        option.textContent = b.id + " - " + b.name;
+        select.appendChild(option);
+    });
+
+    if (batches.some(b => b.id === oldValue)) {
+        select.value = oldValue;
+    }
+}
+
+function generateQR() {
+    const id = document.getElementById("qrSelect").value;
+
+    const batch = batches.find(b => b.id === id);
+
+    if (!batch) {
+        alert("Please select a batch first.");
+        return;
+    }
+
+    const qrBox = document.getElementById("qrcode");
+
+    if (typeof QRCode === "undefined") {
+        alert("QR library could not load. Please check your internet connection.");
+        return;
+    }
+
+    qrBox.innerHTML = "";
+
+    const qrData = JSON.stringify({
+        id: batch.id,
+        name: batch.name,
+        category: batch.category,
+        quantity: batch.quantity,
+        department: batch.department
+    });
+
+    new QRCode(qrBox, {
+        text: qrData,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    document.getElementById("qrText").textContent =
+        "QR Code for " + batch.id;
+
+    document.getElementById("downloadQR").style.display =
+        "inline-block";
+}
+
+function downloadQR() {
+    const qr = document.querySelector("#qrcode img");
+
+    if (!qr) return;
+
+    const link = document.createElement("a");
+
+    link.href = qr.src;
+    link.download = "Medical-Waste-QR.png";
+    link.click();
+}
+
+// ANALYTICS
+
+function renderCharts() {
+    const categories = ["Yellow", "Red", "White", "Blue"];
+
+    const counts = categories.map(category =>
+        batches.filter(b => b.category === category).length
+    );
+
+    const quantities = categories.map(category =>
+        batches.filter(b => b.category === category)
+            .reduce((sum, b) => sum + b.quantity, 0)
+    );
+
+    if (categoryChart) categoryChart.destroy();
+    if (quantityChart) quantityChart.destroy();
+
+    categoryChart = new Chart(
+        document.getElementById("categoryChart"), {
+            type: "doughnut",
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: [
+                        "#e9b83f",
+                        "#df6464",
+                        "#b4b4b4",
+                        "#4c94d3"
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Waste Batches by Category"
+                    }
+                }
+            }
+        }
+    );
+
+    quantityChart = new Chart(
+        document.getElementById("quantityChart"), {
+            type: "bar",
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: "Waste Quantity (kg)",
+                    data: quantities,
+                    backgroundColor: "#248c68"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Waste Quantity by Category"
+                    }
+                }
+            }
+        }
+    );
+}
+
+// ACTIVITY HISTORY
+
+function renderHistory() {
+    const list = document.getElementById("historyList");
+
+    if (history.length === 0) {
+        list.innerHTML = "<p>No activity recorded yet.</p>";
+        return;
+    }
+
+    list.innerHTML = history.map(h => `
+        <div class="history-item">
+            <strong>${escapeHTML(h.id)}</strong><br>
+            ${escapeHTML(h.message)}<br>
+            Handler: ${escapeHTML(h.handler)}<br>
+            <small>${escapeHTML(h.time)}</small>
+        </div>
+    `).join("");
+}
+
+// REFRESH EVERYTHING
+
+function renderAll() {
+    renderDashboard();
+    renderRecords();
+    renderQRSelect();
+    renderCharts();
+    renderHistory();
+}
+
+renderAll();
+
+</script>
+
+</body>
+</html>
